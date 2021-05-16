@@ -17,7 +17,7 @@ def testFrecuencias(n,m,generador):
 		dcuad += ((nros[i]-fEsp)**2)
 	dcuad = dcuad/fEsp
 	print("Dcuad: "+str(dcuad))
-	limiteSuperior = chi2.ppf(0.99, df=m)
+	limiteSuperior = chi2.ppf(0.99, df=m-1)
 	print("limiteSuperior: "+str(limiteSuperior))
 	if (dcuad <= limiteSuperior):
 		print("El test acepta la hipotesis nula")
