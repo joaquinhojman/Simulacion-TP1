@@ -17,7 +17,7 @@ def gcl(n, a = a, x0 = x0, c = c, m = m): #n = cantidad de iteraciones
 	return valores
 
 def gclB(n, a = a, x0 = x0, c = c, m = m): #n = cantidad de iteraciones
-	valores_normalizados = gcl(n,a,x0,c,m)
+	valores_normalizados = gcl(n,a=a,x0=x0,c=c,m=m)
 	for i in range(len(valores_normalizados)):
 		valores_normalizados[i] = valores_normalizados[i]/m
 	return valores_normalizados
