@@ -13,12 +13,9 @@ def testFrecuencias(n,m,generador):
 	nros = collections.Counter(generador(n,m=m))
 	dcuad = 0
 	for i in range(m):
-		print(i)
 		dcuad += ((nros[i]-fEsp)**2)
 	dcuad = dcuad/fEsp
-	print("Dcuad: "+str(dcuad))
 	limiteSuperior = chi2.ppf(0.99, df=m-1)
-	print("limiteSuperior: "+str(limiteSuperior))
 	if (dcuad <= limiteSuperior):
 		print("El test acepta la hipotesis nula")
 	else:
