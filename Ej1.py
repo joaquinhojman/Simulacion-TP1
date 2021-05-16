@@ -7,7 +7,7 @@ a = 1013904223
 c = 1664525
 x0 = (102264 + 102425 + 104112)//3
 
-def gcl(n): #n = cantidad de iteraciones
+def gcl(n, a = a, x0 = x0, c = c, m = m): #n = cantidad de iteraciones
 	valores = []
 	x_act = x0
 	for i in range(n):
@@ -16,13 +16,13 @@ def gcl(n): #n = cantidad de iteraciones
 		x_act = x_sig
 	return valores
 
-def gclB(n): #n = cantidad de iteraciones
-	valores_normalizados = gcl(n)
+def gclB(n, a = a, x0 = x0, c = c, m = m): #n = cantidad de iteraciones
+	valores_normalizados = gcl(n,a,x0,c,m)
 	for i in range(len(valores_normalizados)):
 		valores_normalizados[i] = valores_normalizados[i]/m
 	return valores_normalizados
 
-def gclD(n): #n = cantidad de iteraciones
+def gclD(n, a = a, x0 = x0, c = c, m = m): #n = cantidad de iteraciones
 	valores = [] #Valores abritrarios
 	for i in range(55):
 		valores.append(random.randint(0, 2**24))
@@ -33,7 +33,7 @@ def gclD(n): #n = cantidad de iteraciones
 
 def main():
 	n=1000
-#a) Implementar un Generador Congruencial Lineal (GCL) de módulo 2
+#1)a) Implementar un Generador Congruencial Lineal (GCL) de módulo 2
 #32, multiplicador 1013904223, incremento de
 #1664525 y semilla igual a la parte entera del promedio de los números de padrón de los integrantes del grupo.
 	a_results = gcl(n)
