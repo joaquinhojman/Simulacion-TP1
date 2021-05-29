@@ -18,8 +18,9 @@ Se modelan los espacios en blanco como _, los espacios con infectados como X, y 
 '''
 import matplotlib.pyplot as plt
 import random
-n = 500 #cantidad de individuos en la poblacion
-NCELDASXFILA = 100
+n = 100 #cantidad de individuos en la poblacion
+NCELDASXFILA = 40
+INSTANTES = 1000
 
 def generar_espacio_vacio():
 	espacio = []
@@ -57,11 +58,11 @@ def verificar_rango(i,j,dist):
 		return False
 	return True
 
-def verificar_si_se_infecta(espacio,j,i):
+def verificar_si_se_infecta(espacio,i,j):
 	for dist in range(-3,3):
 		if (verificar_rango(i,j,dist) == False):
 			continue
-		if (espacio[j][i+dist] == "X" or espacio[j+dist][i] == "X"):
+		if (espacio[i][j+dist] == "X" or espacio[i+dist][j] == "X"):
 			probContagio = random.random()
 			if (probContagio <= 0.7):
 				return True
@@ -69,7 +70,7 @@ def verificar_si_se_infecta(espacio,j,i):
 	for dist in range(-6,-4):
 		if (verificar_rango(i,j,dist) == False):
 			continue
-		if (espacio[j][i+dist] == "X" or espacio[j+dist][i] == "X"):
+		if (espacio[i][j+dist] == "X" or espacio[i+dist][j] == "X"):
 			probContagio = random.random()
 			if (probContagio <= 0.5):
 				return True
@@ -77,68 +78,79 @@ def verificar_si_se_infecta(espacio,j,i):
 	for dist in range(4,6):
 		if (verificar_rango(i,j,dist) == False):
 			continue
-		if (espacio[j][i+dist] == "X" or espacio[j+dist][i] == "X"):
+		if (espacio[i][j+dist] == "X" or espacio[i+dist][j] == "X"):
 			probContagio = random.random()
 			if (probContagio <= 0.5):
 				return True
 	return False
 
 def random_walking(personas, contagiados):
+	sanos = n - contagiados
 	lista_contagios_por_t = []
 	lista_sanos_por_t = []
 	lista_contagios_por_t.append(contagiados)
 	lista_sanos_por_t.append(n-contagiados)
-	for instante in range(1000):
-		imprimir_estado(personas)
+	for instante in range(INSTANTES):
 		for k,v in personas.items():
 			if (hay_movimiento(v[3]) == False):
 				continue
+			estado = obtener_estado(personas)
 			movimiento = random.random()
 			if (movimiento <= 0.25): #sentido del movimiento
 				if (v[1]+1 == NCELDASXFILA): #que no se salga de rango
 					continue
-				personas[k] = (v[0],v[1]+1,v[2],v[3])
+				if estado[v[0]][v[1]+1] == '_':#que no este ocupada
+					personas[k] = (v[0],v[1]+1,v[2],v[3])
+				
 			elif (movimiento <= 0.5): #sentido del movimiento
 				if (v[1]-1 < 0): #que no se salga de rango
 					continue
-				personas[k] = (v[0],v[1]-1,v[2],v[3])
+				if estado[v[0]][v[1]-1] == '_':#que no este ocupada
+					personas[k] = (v[0],v[1]-1,v[2],v[3])
+
 			elif (movimiento <= 0.75): #sentido del movimiento
 				if (v[0]+1 == NCELDASXFILA): #que no se salga de rango
 					continue
-				personas[k] = (v[0]+1,v[1],v[2],v[3])
+				if estado[v[0]+1][v[1]] == '_':#que no este ocupada
+					personas[k] = (v[0]+1,v[1],v[2],v[3])
+
 			else: #sentido del movimiento
 				if (v[0]-1 < 0): #que no se salga de rango
 					continue
-				personas[k] = (v[0]-1,v[1],v[2],v[3])
+				if estado[v[0]-1][v[1]] == '_':#que no este ocupada
+					personas[k] = (v[0]-1,v[1],v[2],v[3])
 
-			estado = obtener_estado(personas)
-			for i in range(NCELDASXFILA):
-				for j in range(NCELDASXFILA):
-					if (estado[j][i] == "_" or estado[j][i] == "X"):
-						continue
-					if (verificar_si_se_infecta(estado,j,i) == True):
-						estado[j][i] = "X"
-						contagiados += 1
-						for k,v in personas.items():
-							if (v[0] == j and v[1] == i):
-								personas[k] = (v[0],v[1],"X",v[3])
+
+		for i in range(NCELDASXFILA):
+			for j in range(NCELDASXFILA):
+				if (estado[i][j] == "O" and verificar_si_se_infecta(estado,i,j) == True):
+					estado[i][j] = "X"
+					contagiados += 1
+					sanos -= 1
+					for k,v in personas.items():
+						if (v[0] == i and v[1] == j):
+							personas[k] = (i,j,"X",v[3])
+							break
+
 		lista_contagios_por_t.append(contagiados)
-		lista_sanos_por_t.append(n-contagiados)
-		if (contagiados > 0.9*n):	
+		lista_sanos_por_t.append(sanos)
+		imprimir_estado(personas)
+		if (contagiados >= n):	
 			return lista_contagios_por_t,lista_sanos_por_t				
 	return lista_contagios_por_t,lista_sanos_por_t				
 
-def estado_inicial(espacio):	
+def estado_inicial():	
 	#Ubico a las N personas de forma aleatoria. El 2% estan infectados.
 	#Se decide el "tipo" de persona
 	personas = {} #clave: persona. valor: x,y,infectado o no, tipo de persona
+	espacio = generar_espacio_vacio()
 	contagiados = 0
 	for i in range(n):
 		x = random.randrange(0,NCELDASXFILA-1)
 		y = random.randrange(0,NCELDASXFILA-1)
-		if (espacio[x][y] != "_"):
-			i -= 1 #ese espacio estaba ubicado, prueba otra vez en la prox iteracion
-			continue 
+		while (espacio[x][y] != "_"):
+			x = random.randrange(0,NCELDASXFILA-1)
+			y = random.randrange(0,NCELDASXFILA-1)
 
 		tipo = ""
 		probTipo = random.random()
@@ -160,15 +172,16 @@ def estado_inicial(espacio):
 	return personas, contagiados
 
 def main():	
-	#Genero el espacio vacio
-	espacio = generar_espacio_vacio()
-	
-	personas, contagiados = estado_inicial(espacio)
+	#Genero el espacio inicial
+	personas, contagiados = estado_inicial()
+	if (contagiados != 0):
+		lista_contagiados, lista_sanos = random_walking(personas,contagiados)
 
-	lista_contagiados, lista_sanos = random_walking(personas,contagiados)
+		plt.plot(lista_contagiados);
+		plt.show()
 
-#	plt.plot(lista_contagiados);
-#	plt.show()
+		plt.plot(lista_sanos);
+		plt.show()
 
 #	print(len(lista_contagiados))
 	#3 instantes de tiempo siendo n=2000
@@ -176,13 +189,10 @@ def main():
 	#25 instantes de tiempo siendo n=500
 	#211 instantes de tiempo siendo n=250
 	#733 instantes de tiempo siendo n=100
-#	x = [3,5,25,211,733]
-#	y = [2000,1000,500,250,100]
-#	plt.scatter(x,y)
-#	plt.show()
-
-#	plt.plot(lista_sanos);
-#	plt.show()
+	x = [3,5,25,211,733]
+	y = [2000,1000,500,250,100]
+	plt.scatter(x,y)
+	plt.show()
 
 
 main()
